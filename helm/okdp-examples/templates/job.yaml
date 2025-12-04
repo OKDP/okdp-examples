@@ -1,0 +1,96 @@
+{{- $root := . }}
+  {{- $groupNames := sortAlpha (keys $root.Values.commands) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "okdp-examples.fullname" $root }}
+  labels:
+    {{- include "okdp-examples.labels" $root | nindent 4 }}
+  {{- with $root.Values.job.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  backoffLimit: {{ $root.Values.job.backoffLimit | default 2 }}
+  template:
+    metadata:
+      {{- with $root.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "okdp-examples.labels" $root | nindent 8 }}
+          {{- with $root.Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+    spec:
+      restartPolicy: {{ $root.Values.job.restartPolicy | default "Never" }}
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $root.Values.serviceAccount.create }}
+      serviceAccountName: {{ include "okdp-examples.serviceAccountName" $root }}
+      {{- end }}
+      securityContext:
+        {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: runner
+          securityContext:
+            {{- toYaml $root.Values.securityContext | nindent 12 }}
+          image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              
+              echo "🚀 Starting OKDP Examples Job"
+              {{- range $groupName := $groupNames }}
+              echo ""
+              echo "=================================================="
+              echo "▶️ Running command: {{ $groupName }}"
+              echo "=================================================="
+              
+              for script in /scripts/{{ $groupName }}__*.sh; do
+                echo "➡️ Running step: $script"
+                bash "$script"
+              done
+              
+              echo "✅ Completed command: {{ $groupName }}"
+              {{- end }}
+              echo ""
+              echo "🎉 ALL GROUPS COMPLETED SUCCESSFULLY"
+
+          {{- with $root.Values.extraEnvRaw }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml $root.Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            {{- with $root.Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "okdp-examples.fullname" $root }}
+        {{- with $root.Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

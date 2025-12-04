@@ -1,0 +1,17 @@
+apiVersion: v2
+type: application
+name: okdp-examples
+version: 1.0.0
+sources:
+  - https://github.com/okdp/okdp-examples
+appVersion: "1.0.0"
+description: |
+  A collection of hands-on examples, helper utilities, Jupyter notebooks, and data workflows 
+  that showcases how to work with the OKDP Platform.
+maintainers:
+  - email: idir.izitounene@kubotal.io
+    name: idirze
+    url: https://github.com/idirze
+
+
+

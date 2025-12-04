@@ -1,0 +1,19 @@
+{{- $root := . }}
+{{- $groupNames := sortAlpha (keys $root.Values.commands) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "okdp-examples.fullname" $root }}
+  labels:
+    {{- include "okdp-examples.labels" $root | nindent 4 }}
+data:
+{{- range $groupName := $groupNames }}
+  {{- $steps := index $root.Values.commands $groupName }}
+  {{- $stepKeys := sortAlpha (keys $steps) }}
+  {{- range $stepKeys }}
+  {{ printf "%s__%s.sh" $groupName . }}: |
+    #!/bin/bash
+    set -euo pipefail
+    {{ index $steps . | indent 4 }}
+  {{- end }}
+{{- end }}
