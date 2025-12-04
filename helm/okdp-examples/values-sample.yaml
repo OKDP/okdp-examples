@@ -1,50 +1,28 @@
-# Default values for okdp-examples.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-image:
-  repository: quay.io/okdp/okdp-examples
-  pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-job:
-  restartPolicy: Never
-  backoffLimit: 2
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": "before-hook-creation"
-
-# -- Extra environment variables in RAW format that will be passed into pods
-extraEnvRaw: []
-#  - name: MC_INSECURE
-#    value: "1"
-#  - name: S3_ENDPOINT
-#    value: https://minio-default.okdp.sandbox
-#  - name: S3_ACCESS_KEY
-#    valueFrom:
-#      secretKeyRef:
-#        name: local-examples-s3
-#        key: accessKey
-#  - name: S3_SECRET_KEY
-#    valueFrom:
-#      secretKeyRef:
-#        name: local-examples-s3
-#        key: secretKey
-#  - name: BUCKET
-#    value: okdp
-#  - name: BUCKET_PREFIX
-#    value: "examples/data/raw/tripdata"
-#  - name: DATA_URL
-#    value: https://d37ci6vzurychx.cloudfront.net/trip-data
-#  - name: TRINO_SERVER_URL
-#    value: https://trino-default.okdp.sandbox
-#  - name: TRINO_TERMINAL
-#    value: dumb
+extraEnvRaw:
+  - name: MC_INSECURE
+    value: "1"
+  - name: S3_ENDPOINT
+    value: https://minio-default.okdp.sandbox
+  - name: S3_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: local-examples-s3
+        key: accessKey
+  - name: S3_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: local-examples-s3
+        key: secretKey
+  - name: BUCKET
+    value: okdp
+  - name: BUCKET_PREFIX
+    value: "examples/data/raw/tripdata"
+  - name: DATA_URL
+    value: https://d37ci6vzurychx.cloudfront.net/trip-data
+  - name: TRINO_SERVER_URL
+    value: https://trino-default.okdp.sandbox
+  - name: TRINO_TERMINAL
+    value: dumb
 
 commands:
   nyc_trip:
@@ -86,7 +64,7 @@ commands:
           mc cp "$file" "myminio/$BUCKET/${BUCKET_PREFIX}/$category/month=$month/"
         done
       done
-      
+    
       echo "👉 Verify bucket structure"
       mc tree myminio/$BUCKET
       mc ls --recursive myminio/$BUCKET
@@ -94,7 +72,7 @@ commands:
     03-nyc-tripdata-trino-external-tables.sql: |
       trino --server ${TRINO_SERVER_URL} --insecure <<SQL
         CREATE SCHEMA IF NOT EXISTS lakehouse.nyc_tripdata;
-      
+        
         CREATE TABLE IF NOT EXISTS lakehouse.nyc_tripdata.yellow (
           vendorid INT,
           tpep_pickup_datetime TIMESTAMP,
@@ -123,7 +101,7 @@ commands:
           format = 'PARQUET',
           partitioned_by = ARRAY['month']
         );
-      
+          
         CREATE TABLE IF NOT EXISTS lakehouse.nyc_tripdata.green (
           vendorid INT,
           lpep_pickup_datetime TIMESTAMP,
@@ -152,7 +130,7 @@ commands:
           format = 'PARQUET',
           partitioned_by = ARRAY['month']
         );
-      
+        
         CREATE TABLE IF NOT EXISTS lakehouse.nyc_tripdata.fhv (
           dispatching_base_num VARCHAR,
           pickup_datetime TIMESTAMP,
@@ -198,64 +176,9 @@ commands:
         DESCRIBE lakehouse.nyc_tripdata.yellow;
         DESCRIBE lakehouse.nyc_tripdata.green;
         DESCRIBE lakehouse.nyc_tripdata.fhv;
-      
+        
         SELECT *
         FROM lakehouse.nyc_tripdata.yellow
         LIMIT 10;
       SQL
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-# Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
