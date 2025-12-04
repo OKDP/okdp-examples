@@ -71,7 +71,6 @@ jobs:
     with:
       context: .
       dockerfile: docker/Dockerfile
-    needs: [metastore-versions]
 
   helm-lint:
     name: helm-lint
