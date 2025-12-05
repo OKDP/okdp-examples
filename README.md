@@ -23,7 +23,7 @@ Use Apache Superset (SQL Lab) to query Trino and build visualizations/dashboards
 
 # Running the examples:
 
-Using [okdp-ui](https://github.com/OKDP/okdp-ui), deploy the following components:
+Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following components:
 
 - Storage: MinIO
 - Data Catalog: [Hive Metastore](https://hive.apache.org/)
