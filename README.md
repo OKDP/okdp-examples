@@ -8,14 +8,28 @@
 A collection of hands-on examples, helper utilities, Jupyter notebooks, and data workflows showcasing how to work with the [OKDP Platform](https://okdp.io/).
 This repository is meant to help you explore OKDP capabilities around compute, object storage, data catalog, SQL engines, Spark, and analytics.
 
+Over time, these examples will be extended with lakehouse-oriented features, such as:
+
+- Open table formats (e.g. Apache Iceberg and/or Delta Lake).
+- Shared metadata with stronger schema enforcement and evolution.
+- Snapshot-based table management (time travel, retention, cleanup).
+- Incremental processing and analytics-ready datasets, etc.
+
 # Notebooks
 
-Jupyter notebooks that query Trino:
+The notebooks analyze datasets stored as Parquet on S3-compatible storage (MinIO).
+The same underlying dataset is queried using Trino and Spark.
 
-- Querying data using Trino (Python/SQLAlchemy)
-- Querying data using Trino (SQL engine)
+An [index.ipynb](./notebooks/index.ipynb) notebook is also provided as an entry point.
 
-An index.ipynb notebook is also provided as an entry point.
+## Trino notebooks
+
+The following notebooks query data using Trino:
+
+- Querying data using Trino (Python/SQLAlchemy).
+- Querying data using Trino (SQL engine).
+
+These notebooks use Trino external tables defined over Parquet data stored in object storage and registered via a metadata service.
 
 # Superset
 
@@ -34,9 +48,12 @@ Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following comp
 
 # About the datasets
 
-The Helm chart downloads public datasets at runtime, uploads them into object storage and creates appropriate Trino external tables.
+At deployment time, the Helm chart:
+1. Downloads public datasets.
+2. Uploads them into object storage.
+3. Creates the corresponding Trino external tables.
 
 > ℹ️ NOTE
 >
-> The datasets are not bundled in this repository or baked into container images.
+> The datasets are not bundled in this repository and are not baked into container images.
 

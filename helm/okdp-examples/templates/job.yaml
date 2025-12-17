@@ -61,7 +61,7 @@ spec:
               echo "✅ Completed command: {{ $groupName }}"
               {{- end }}
               echo ""
-              echo "🎉 ALL GROUPS COMPLETED SUCCESSFULLY"
+              echo "🎉 ALL COMMANDS SUCCESSFULLY COMPLETED"
 
           {{- with $root.Values.extraEnvRaw }}
           env:
