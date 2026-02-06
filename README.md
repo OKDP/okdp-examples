@@ -31,6 +31,10 @@ The following notebooks query data using Trino:
 
 These notebooks use Trino external tables defined over Parquet data stored in object storage and registered via a metadata service.
 
+## PySpark notebook
+
+A PySpark notebook is included to showcase Spark-native exploratory data analysis on the same dataset.
+
 # Superset
 
 Use Apache Superset (SQL Lab) to query Trino and build visualizations/dashboards on top of the same datasets.
