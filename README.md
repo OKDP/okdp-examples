@@ -43,7 +43,7 @@ Use Apache Superset (SQL Lab) to query Trino and build visualizations/dashboards
 
 Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following components:
 
-- Storage: [MinIO](https://www.min.io/)
+- Storage: [SeaweedFS](https://github.com/seaweedfs/seaweedfs)
 - Data Catalog: [Hive Metastore](https://hive.apache.org/)
 - Interactive Query: [Trino](https://trino.io/)
 - Notebooks: [Jupyter](https://jupyter.org/)
