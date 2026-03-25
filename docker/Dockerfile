@@ -14,42 +14,48 @@
 #  limitations under the License.
 #
 
-# Minimal Trino + MinIO + Git client image
-FROM alpine:3.20
+FROM python:3.12-slim-bookworm
 
-# Set environment
 ENV MC_VERSION=RELEASE.2024-11-21T17-21-54Z \
     TRINO_VERSION=477 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     PATH="/usr/local/bin:${PATH}"
 
-# Install core packages
-RUN apk add --no-cache \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
       bash \
       less \
       git \
       curl \
       ca-certificates \
-      openjdk17-jre-headless && \
-      update-ca-certificates && \
-      rm -rf /var/cache/apk/*
+      openjdk-17-jre-headless && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install MinIO Client (mc)
-RUN curl -L -o /usr/local/bin/mc \
-      https://dl.min.io/client/mc/release/linux-amd64/archive/mc.${MC_VERSION} && \
+RUN curl -fsSL -o /usr/local/bin/mc \
+      "https://dl.min.io/client/mc/release/linux-amd64/archive/mc.${MC_VERSION}" && \
     chmod +x /usr/local/bin/mc
 
-# Install Trino CLI
-RUN curl -L -o /usr/local/bin/trino \
+RUN curl -fsSL -o /usr/local/bin/trino \
       "https://github.com/trinodb/trino/releases/download/${TRINO_VERSION}/trino-cli-${TRINO_VERSION}" && \
     chmod +x /usr/local/bin/trino
 
-# Verify tools
-RUN git --version
-RUN mc --version
-RUN trino --version
+RUN pip install --no-cache-dir \
+      requests \
+      pyyaml
+
+COPY docker/polaris-admin.py /usr/local/bin/polaris-admin
+RUN chmod +x /usr/local/bin/polaris-admin
+
+RUN python --version && \
+    git --version && \
+    mc --version && \
+    trino --version && \
+    java -version
 
 WORKDIR /data
-
-RUN mkdir -p /data/
+RUN mkdir -p /data
 
 ENTRYPOINT ["bash"]
+
