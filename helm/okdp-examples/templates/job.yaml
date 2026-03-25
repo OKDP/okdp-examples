@@ -18,6 +18,9 @@
 
 {{- $root := . }}
 {{- $groupNames := sortAlpha (keys $root.Values.commands) }}
+{{- $extraFiles := default dict $root.Values.extraFiles }}
+{{- $extraVolumes := concat (default (list) $root.Values.extraVolumes) (default (list) $root.Values.volumes) }}
+{{- $extraVolumeMounts := concat (default (list) $root.Values.extraVolumeMounts) (default (list) $root.Values.volumeMounts) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -62,22 +65,23 @@ spec:
             - /bin/bash
             - -c
             - |
-              set -e
-              
+              set -euo pipefail
+
               echo "🚀 Starting OKDP Examples Job"
               {{- range $groupName := $groupNames }}
               echo ""
               echo "=================================================="
               echo "▶️ Running command: {{ $groupName }}"
               echo "=================================================="
-              
+
               for script in /scripts/{{ $groupName }}__*.sh; do
                 echo "➡️ Running step: $script"
                 bash "$script"
               done
-              
+
               echo "✅ Completed command: {{ $groupName }}"
               {{- end }}
+
               echo ""
               echo "🎉 ALL COMMANDS SUCCESSFULLY COMPLETED"
 
@@ -85,21 +89,36 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+
           resources:
             {{- toYaml $root.Values.resources | nindent 12 }}
+
           volumeMounts:
             - name: scripts
               mountPath: /scripts
-            {{- with $root.Values.volumeMounts }}
+            {{- range $name, $file := $extraFiles }}
+            - name: extra-file-{{ $name }}
+              mountPath: {{ $file.mountPath | quote }}
+              subPath: {{ default (base $file.mountPath) $file.fileName | quote }}
+              readOnly: true
+            {{- end }}
+            {{- with $extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+
       volumes:
         - name: scripts
           configMap:
             name: {{ include "okdp-examples.fullname" $root }}
-        {{- with $root.Values.volumes }}
+        {{- range $name, $file := $extraFiles }}
+        - name: extra-file-{{ $name }}
+          configMap:
+            name: {{ include "okdp-examples.fullname" $root }}-{{ $name }}
+        {{- end }}
+        {{- with $extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+
       {{- with $root.Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

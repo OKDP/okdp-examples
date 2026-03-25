@@ -247,6 +247,72 @@ commands: {}
 #        FROM lakehouse.nyc_tripdata.yellow
 #        LIMIT 10;
 #      SQL
+#  03-polaris: |
+#    01-polaris-apply-catalogs
+#      polaris-admin --catalog-file /etc/polaris/catalogs.yaml
+
+# -- extraFiles is a map of additional single-file ConfigMaps mounted into the Job container.
+# -- Each entry must define mountPath and stringData, and may optionally define fileName.
+extraFiles: {}
+#  polaris-catalogs:
+#    mountPath: /etc/polaris/catalogs.yaml
+#    stringData: |
+#      realms:
+#        - name: SANDBOX
+#          catalogs:
+#            - name: mobility
+#              type: INTERNAL
+#              properties:
+#                default-base-location: $DEFAULT_POLARIS_CATALOG_BASE_LOCATION
+#              storageConfigInfo:
+#                storageType: S3
+#                "allowedLocations": ["$DEFAULT_POLARIS_CATALOG_BASE_LOCATION"],
+#                "endpoint": "$S3_ENDPOINT",
+#                "endpointInternal": "$S3_ENDPOINT",
+#                "stsEndpoint": "$S3_ENDPOINT",
+#                "pathStyleAccess": true,
+#                "stsUnavailable": false,
+#                "region": "dummy",
+#                "roleArn": "$ROLE_ARN"
+#          catalogRoles:
+#            - name: catalog_contributor
+#              grants:
+#                - onCatalog: mobility
+#                  privileges:
+#                    - CATALOG_READ_PROPERTIES
+#
+#            - name: catalog_reader
+#              grants:
+#                - onCatalog: mobility
+#                  privileges:
+#                    - CATALOG_READ_PROPERTIES
+#
+#            - name: data_administrator
+#              grants:
+#                - onCatalog: mobility
+#                  privileges:
+#                    - CATALOG_READ_PROPERTIES
+#                    - CATALOG_ATTACH_POLICY
+#                    - CATALOG_DETACH_POLICY
+#
+#          principalRoles:
+#            - name: data_scientist
+#              catalogRoles:
+#                - catalog_reader
+#
+#            - name: data_engineer
+#              catalogRoles:
+#                - catalog_contributor
+#                - data_administrator
+#
+#          principals:
+#            - name: alice
+#              principalRoles:
+#                - data_scientist
+#
+#            - name: bob
+#              principalRoles:
+#                - data_engineer
 
 # -- ServiceAccount configuration for the Job pod.
 serviceAccount:
@@ -258,6 +324,19 @@ serviceAccount:
   annotations: {}
   # -- Name of the ServiceAccount to use. If empty and create=true, a name is generated.
   name: ""
+
+# -- extraVolumes is a list of additional pod volumes appended to the Job pod spec.
+extraVolumes: []
+#  - name: cacerts
+#    secret:
+#      secretName: certs-bundle
+#      optional: false
+
+# -- extraVolumeMounts is a list of additional container volume mounts appended to the Job container.
+extraVolumeMounts: []
+#  - name: cacerts
+#    mountPath: /cacerts
+#    readOnly: true
 
 # -- Additional annotations added to the pod template.
 podAnnotations: {}
@@ -290,19 +369,6 @@ resources: {}
   # requests:
 #   cpu: 100m
 #   memory: 128Mi
-
-# -- Additional volumes added to the Job pod.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# -- Additional volume mounts added to the Job container.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
 
 # -- Node selector constraints for scheduling the Job pod.
 nodeSelector: {}
