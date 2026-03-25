@@ -26,7 +26,7 @@ Expected grant format:
     catalogRoles:
       - name: catalog_reader
         grants:
-          - onCatalog: nyc_tripdata
+          - onCatalogs: [silver, gold]
             privileges:
               - CATALOG_READ_PROPERTIES
 
@@ -131,12 +131,12 @@ TLS and transport:
 
 Supported contract scope:
     - catalogs
-    - catalogRoles with catalog-level grants using grants[].onCatalog
+    - catalogRoles with catalog-level grants using grants[].onCatalogs
     - principalRoles
     - principals
 
 Current limitations:
-    - only grants.onCatalog is supported
+    - only catalog-level grants are supported
     - namespaces, tables, views, and policies are not created by this version
 """
 
@@ -1560,20 +1560,33 @@ class PolarisAdmin:
             f"payload={self._json_for_log(payload)}"
         )
 
-    def _catalog_from_grant(self, role_name: str, grant: Any) -> str:
-        """Validate and return the catalog name referenced by a grant block."""
+    def _catalogs_from_grant(self, role_name: str, grant: Any) -> List[str]:
+        """Validate and return the catalog names referenced by a grant block."""
         if not isinstance(grant, dict):
             raise PolarisAdminError(
                 f"catalog role '{role_name}' grant must be a mapping, got: {grant!r}"
             )
 
-        catalog_name = grant.get("onCatalog")
-        if not isinstance(catalog_name, str) or not catalog_name.strip():
+        raw_catalogs = grant.get("onCatalogs")
+        if not isinstance(raw_catalogs, list) or not raw_catalogs:
             raise PolarisAdminError(
-                f"catalog role '{role_name}' contains a grant without onCatalog, got: {grant!r}"
+                f"catalog role '{role_name}' grant must contain a non-empty onCatalogs list, got: {grant!r}"
             )
 
-        return catalog_name.strip()
+        catalogs: List[str] = []
+        seen: Set[str] = set()
+
+        for item in raw_catalogs:
+            if not isinstance(item, str) or not item.strip():
+                raise PolarisAdminError(
+                    f"catalog role '{role_name}' grant has an invalid catalog in onCatalogs: {grant!r}"
+                )
+            catalog_name = item.strip()
+            if catalog_name not in seen:
+                seen.add(catalog_name)
+                catalogs.append(catalog_name)
+
+        return catalogs
 
     def _privileges_from_grant(
         self,
@@ -1590,12 +1603,17 @@ class PolarisAdmin:
             )
 
         cleaned: List[str] = []
+        seen: Set[str] = set()
+
         for privilege in privileges:
             if not isinstance(privilege, str) or not privilege.strip():
                 raise PolarisAdminError(
                     f"catalog role '{role_name}' has an invalid privilege in grant: {grant!r}"
                 )
-            cleaned.append(privilege.strip())
+            privilege_name = privilege.strip()
+            if privilege_name not in seen:
+                seen.add(privilege_name)
+                cleaned.append(privilege_name)
 
         return cleaned
 
@@ -1616,14 +1634,15 @@ class PolarisAdmin:
                 raise PolarisAdminError(f"catalog role '{role_name}' grants must be a list")
 
             for grant in grants:
-                catalog_name = self._catalog_from_grant(role_name, grant)
-                self._privileges_from_grant(role_name, grant, catalog_name)
+                catalog_names = self._catalogs_from_grant(role_name, grant)
+                for catalog_name in catalog_names:
+                    self._privileges_from_grant(role_name, grant, catalog_name)
 
-                if catalog_name not in catalogs:
-                    raise PolarisAdminError(
-                        f"catalog role '{role_name}' references undeclared catalog '{catalog_name}'. "
-                        f"Declared catalogs in realm '{realm.get('name', '<unknown>')}': {sorted(catalogs)}"
-                    )
+                    if catalog_name not in catalogs:
+                        raise PolarisAdminError(
+                            f"catalog role '{role_name}' references undeclared catalog '{catalog_name}'. "
+                            f"Declared catalogs in realm '{realm.get('name', '<unknown>')}': {sorted(catalogs)}"
+                        )
 
         for principal_role in realm.get("principalRoles", []):
             principal_role_name = principal_role.get("name", "<unknown>")
@@ -1661,13 +1680,17 @@ class PolarisAdmin:
     def catalogs_for_catalog_role(self, realm: Dict[str, Any], role_name: str) -> List[str]:
         """Return the distinct catalog names targeted by a catalog role's grants."""
         target_catalogs: List[str] = []
+        seen: Set[str] = set()
+
         for role in realm.get("catalogRoles", []):
             if role.get("name") != role_name:
                 continue
             for grant in role.get("grants", []):
-                catalog_name = self._catalog_from_grant(role_name, grant)
-                if catalog_name not in target_catalogs:
-                    target_catalogs.append(catalog_name)
+                for catalog_name in self._catalogs_from_grant(role_name, grant):
+                    if catalog_name not in seen:
+                        seen.add(catalog_name)
+                        target_catalogs.append(catalog_name)
+
         return target_catalogs
 
     def apply_realm(self, realm: Dict[str, Any]) -> None:
@@ -1700,13 +1723,13 @@ class PolarisAdmin:
                 self.ensure_catalog_role(catalog_name, role_name)
 
             for grant in catalog_role.get("grants", []):
-                catalog_name = self._catalog_from_grant(role_name, grant)
-                for privilege in self._privileges_from_grant(
-                    role_name,
-                    grant,
-                    catalog_name,
-                ):
-                    self.grant_to_catalog_role(catalog_name, role_name, privilege)
+                for catalog_name in self._catalogs_from_grant(role_name, grant):
+                    for privilege in self._privileges_from_grant(
+                        role_name,
+                        grant,
+                        catalog_name,
+                    ):
+                        self.grant_to_catalog_role(catalog_name, role_name, privilege)
 
         for principal_role in realm.get("principalRoles", []):
             principal_role_name = principal_role["name"]
@@ -1817,4 +1840,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
