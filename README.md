@@ -31,8 +31,8 @@ Over time, these examples will be extended with features, such as:
                                              |
         +------+     +----------+      +-----+-----+       +-----------+
         | User |---->| Superset |----->|   Trino   |------>|   Bronze  |
-        +--+---+     +-----+----+      +-----+-----+       | HMS ext tbl|
-           |               |                   |             +-----+-----+
+        +--+---+     +-----+----+      +-----+-----+       |HMS ext tbl|
+           |               |                   |           +-----+-----+
            |               | SQL over HTTPS    | Hive            |
            |               |                   v MS              |
            |         +-----+-----+        +---------+            |
@@ -43,7 +43,7 @@ Over time, these examples will be extended with features, such as:
            |                                                     v
            |         +-------------+      REST + OAuth2    +-----+-----+
            +-------->|   Jupyter   |---------------------->|  Polaris  |
-                     | PySpark/notb|<----------------------+ REST cat  |
+                     | PySpark/notb|<----------------------| REST cat  |
                      +------+------+   catalog + temp creds +-----+----+
                             |                                        |
                             | direct S3 with temp creds              | STS AssumeRole
@@ -51,7 +51,7 @@ Over time, these examples will be extended with features, such as:
                             v                                        v
                        +----+----------------------------------------+----+
                        |                 SeaweedFS S3 + IAM + STS         |
-                       +----+-------------------------------+--------------+
+                       +----+-------------------------------+-------------+
                             ^                               ^
                             | static S3 creds               | temp S3 creds
                             |                               |
