@@ -17,7 +17,7 @@
 FROM python:3.12-slim-bookworm
 
 ENV MC_VERSION=RELEASE.2024-11-21T17-21-54Z \
-    TRINO_VERSION=477 \
+    TRINO_VERSION=480 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/usr/local/bin:${PATH}"
@@ -26,8 +26,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       bash \
       less \
-      git \
+      git  \
       curl \
+      jq   \
       ca-certificates \
       openjdk-17-jre-headless && \
     update-ca-certificates && \

@@ -1,6 +1,6 @@
 {
   "name": "okdp-examples",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "okdp-examples docker image",
   "repository": {
     "type": "git",
