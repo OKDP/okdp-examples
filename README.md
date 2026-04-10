@@ -116,20 +116,21 @@ At deployment time, the Helm chart:
 # Know issues
 1. [Polaris - Spark Iceberg REST Catalog refresh token](https://github.com/apache/iceberg/issues/12363)
     > Long-running jobs may need more metadata calls to Polaris during execution, not just one initial call
-2. [Trino - Issue with Vended Credential Renewal with Iceberg REST Catalog](https://github.com/trinodb/trino/issues/25827)
+2. [Polaris - OAuth 2 grant type "refresh_token" not implemented](https://github.com/apache/iceberg/issues/12196)
+3. [Trino - Issue with Vended Credential Renewal with Iceberg REST Catalog](https://github.com/trinodb/trino/issues/25827)
    > Reported upstream: with `iceberg.rest-catalog.vended-credentials-enabled=true`, long-running queries may fail once the STS token expires because Trino appears not to refresh vended credentials from the Iceberg REST catalog `/credentials` endpoint.
    >
    > A fix has been proposed in [PR #28792](https://github.com/trinodb/trino/pull/28792), but it is still under review, so this behavior should be validated in our environment.
-3. [Trino - Extra credential support for user token passthrough](https://github.com/trinodb/trino/issues/27197)
+4. [Trino - Extra credential support for user token passthrough](https://github.com/trinodb/trino/issues/27197)
     > Requests support for passing per-user OAuth tokens/credentials to the Iceberg REST catalog
-4. [Trino - Include oauth user in the request to the iceberg REST catalog](https://github.com/trinodb/trino/issues/26320)
+5. [Trino - Include oauth user in the request to the iceberg REST catalog](https://github.com/trinodb/trino/issues/26320)
    > [Starburst supports OAuth 2.0 token pass-through for the Iceberg REST catalog](https://docs.starburst.io/latest/object-storage/metastores.html#oauth-2-0-token-pass-through), which forwards the delegated OAuth token from the coordinator to the catalog:
    >
    > ```properties
    > http-server.authentication.type=DELEGATED-OAUTH2
    > iceberg.rest-catalog.security=OAUTH2_PASSTHROUGH
    > ```
-5. [STS assume role fails with credentials (from Lakekeeper) due to incomplete STS implementation](https://github.com/seaweedfs/seaweedfs/discussions/8312)
+6. [STS assume role fails with credentials (from Lakekeeper) due to incomplete STS implementation](https://github.com/seaweedfs/seaweedfs/discussions/8312)
    > The discussion initially points to a possible SeaweedFS STS compatibility issue, but the later reproducer narrows the failure to Lakekeeper's scoped session policy: multipart writes fail when the policy omits the required multipart S3 permissions.
    >
    > It demonstrates that multipart upload can fail if the scoped session policy does not include multipart actions such as:
