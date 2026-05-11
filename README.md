@@ -5,8 +5,8 @@
 <img src="https://okdp.io/logos/okdp-notext.svg" height="20px" style="margin: 0 2px;" />
 </a>
 
-A collection of hands-on examples, helper utilities, Jupyter notebooks, and data workflows showcasing how to work with the [OKDP Platform](https://okdp.io/).
-This repository is meant to help you explore OKDP capabilities around compute, object storage, data catalog, SQL engines, Spark, and analytics.
+A collection of hands-on examples, helper utilities, Jupyter notebooks, Airflow DAGs, and data workflows showcasing how to work with the [OKDP Platform](https://okdp.io/).
+This repository is meant to help you explore OKDP capabilities around compute, object storage, data catalog, SQL engines, Spark, workflow orchestration, and analytics.
 
 Over time, these examples will be extended with lakehouse-oriented features, such as:
 
@@ -39,6 +39,16 @@ A PySpark notebook is included to showcase Spark-native exploratory data analysi
 
 Use Apache Superset (SQL Lab) to query Trino and build visualizations/dashboards on top of the same datasets.
 
+# Airflow
+
+The [airflow/](./airflow/) directory contains example DAGs orchestrated by Apache Airflow on the OKDP platform. They demonstrate how to:
+
+- Submit Spark jobs to **Spark Operator** via `SparkApplication` custom resources from a DAG.
+- Build daily ETL pipelines reading from and writing to S3-compatible storage (SeaweedFS).
+- Use Airflow `gitSync` to pull DAGs directly from this repository at runtime.
+
+See [`airflow/README.md`](./airflow/README.md) for the full list of DAGs and quick-start instructions.
+
 # Running the examples:
 
 Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following components:
@@ -48,6 +58,7 @@ Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following comp
 - Interactive Query: [Trino](https://trino.io/)
 - Notebooks: [Jupyter](https://jupyter.org/)
 - DataViz: [Apache Superset](https://superset.apache.org/)
+- Workflow orchestration: [Apache Airflow](https://airflow.apache.org/)
 - Applications: [okdp-examples](https://okdp.io)
 
 # About the datasets
