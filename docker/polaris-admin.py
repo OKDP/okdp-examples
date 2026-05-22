@@ -248,8 +248,11 @@ class PolarisAdmin:
                 import urllib3
 
                 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.debug(
+                    "[STARTUP] Unable to disable urllib3 insecure request warnings: %s",
+                    exc,
+                )
 
         logging.info(
             "[STARTUP] PolarisAdmin initialized | polaris_url=%s tls_verify=%s "
