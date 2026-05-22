@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/OKDP/okdp-examples/compare/v1.0.0...v1.1.0) (2026-05-22)
+
+
+### chore
+
+* release 1.1.0 ([9c836f7](https://github.com/OKDP/okdp-examples/commit/9c836f741698479193ecdcb6b779e68f5f551797))
+
 ## 1.0.0 (2025-12-08)
 
 
