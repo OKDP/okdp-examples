@@ -194,7 +194,7 @@ class AuthConfig:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class TokenCacheEntry:
     """In-memory token cache entry."""
 
