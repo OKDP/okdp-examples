@@ -28,7 +28,7 @@ Over time, these examples will be extended with features, such as:
                                        +-----+-----+
                                              ^
                                              | OIDC / OAuth2
-                                             |
+          OIDC / OAuth2                      |
         +------+     +----------+      +-----+-----+       +-----------+
         | User |---->| Superset |----->|   Trino   |------>|   Bronze  |
         +--+---+     +-----+----+      +-----+-----+       |HMS ext tbl|
@@ -39,7 +39,7 @@ Over time, these examples will be extended with features, such as:
            |         | SQLAlchemy |------>| Hive MS |            |
            |         +-----------+        +---------+            |
            |                                                    S3
-           |                                                     |
+           | OIDC / OAuth2                                       |
            |                                                     v
            |         +-------------+      REST + OAuth2    +-----+-----+
            +-------->|   Jupyter   |---------------------->|  Polaris  |
@@ -66,6 +66,26 @@ Over time, these examples will be extended with features, such as:
                                                        | Iceberg  |
                                                        +----------+
 ```
+
+#### Data flow:
+
+1. Raw Parquet datasets are stored in SeaweedFS S3 as the Bronze layer.
+2. Bronze data is exposed to Trino through Hive Metastore external tables.
+3. Jupyter notebooks use PySpark to read Bronze data and produce trusted Silver Iceberg tables.
+4. Silver and Gold tables are registered in Apache Polaris through the Iceberg REST catalog.
+5. Polaris uses OAuth2 and STS-based credential vending to allow temporary S3 access for Iceberg writes.
+6. Gold tables are built from Silver tables and expose curated business-facing datasets.
+7. Superset connects to Trino over HTTPS and queries the published datasets for analytics and dashboards.
+
+#### Security and access model:
+
+- Keycloak provides OIDC / OAuth2 identity.
+- Jupyter accesses Polaris through OAuth2.
+- Polaris manages catalog permissions and returns temporary credentials for object storage access.
+- SeaweedFS provides S3-compatible storage with IAM and STS.
+- Bronze can use static S3 credentials for raw data access.
+- Silver and Gold should use temporary credentials through Polaris / STS where possible.
+- Superset accesses datasets through Trino rather than directly accessing object storage.
 
 # Notebooks
 
@@ -123,6 +143,163 @@ At deployment time, the Helm chart:
 > ℹ️ NOTE
 >
 > The datasets are not bundled in this repository and are not baked into container images.
+
+# Authentication and Authorization Model
+
+This example uses **Keycloak** as the central identity provider. Applications authenticate users through **OIDC**, and Keycloak realm roles are exposed as OIDC `groups` claims.
+
+The model is based on centralized authentication with role-based authorization across platform services.
+
+## Central Identity Provider
+
+Keycloak is used as the central identity provider. The platform defines OIDC clients for:
+
+* Superset
+* JupyterHub
+* Trino
+* Spark History Server
+* Polaris
+* Airflow
+* Service accounts used by platform components
+
+Keycloak realm roles are mapped into the OIDC `groups` claim.
+As a result, platform applications consume Keycloak roles as user groups.
+
+## OIDC Groups
+
+| Group                   | Purpose                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `platform_admin`        | Full platform administration                         |
+| `data_engineer`         | Data engineering and lakehouse write access          |
+| `data_scientist`        | Analytical access to curated data                    |
+| `business_analyst`      | BI and read-only access                              |
+| `data_steward`          | Governance, stewardship, and metadata administration |
+| `auditor`               | Audit and read-only access                           |
+| `polaris_service_admin` | Polaris service administration                       |
+| `polaris_catalog_admin` | Polaris catalog administration                       |
+
+## OIDC Users
+
+| User    | Groups                                                             |
+| ------- | ------------------------------------------------------------------ |
+| `bob`   | `data_engineer`                                                    |
+| `mark`  | `data_scientist`                                                   |
+| `nina`  | `business_analyst`                                                 |
+| `grace` | `data_steward`                                                     |
+| `eve`   | `auditor`                                                          |
+| `alice` | `platform_admin`, `polaris_service_admin`, `polaris_catalog_admin` |
+| `adm`   | `platform_admin`, `polaris_service_admin`, `polaris_catalog_admin` |
+
+
+<details>
+<summary><strong>Application-level authorization</strong></summary>
+
+Each platform service consumes the OIDC `groups` claim and maps it to application-specific permissions.
+
+### Superset
+
+| Group              | Superset Roles     |
+| ------------------ | ------------------ |
+| `platform_admin`   | `Admin`            |
+| `data_engineer`    | `Alpha`, `sql_lab` |
+| `data_scientist`   | `Alpha`, `sql_lab` |
+| `business_analyst` | `Gamma`            |
+| `data_steward`     | `Gamma`, `sql_lab` |
+| `auditor`          | `Gamma`            |
+
+Superset is configured to impersonate users when connecting to Trino, allowing downstream authorization to be based on the end-user identity.
+
+### JupyterHub
+
+| Permission   | Groups                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Admin access | `platform_admin`                                                                        |
+| Login access | `platform_admin`, `data_engineer`, `data_scientist`, `data_steward`, `business_analyst` |
+
+### Spark History Server
+
+| Permission    | Groups                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------- |
+| Admin         | `platform_admin`                                                                        |
+| History admin | `platform_admin`, `auditor`                                                             |
+| Modify        | `platform_admin`, `data_engineer`                                                       |
+| View          | `platform_admin`, `data_engineer`, `data_scientist`, `data_steward`, `business_analyst` |
+
+### Airflow
+
+| Group              | Airflow Role |
+| ------------------ | ------------ |
+| `platform_admin`   | `Admin`      |
+| `data_engineer`    | `Op`         |
+| `data_scientist`   | `User`       |
+| `business_analyst` | `Viewer`     |
+| `data_steward`     | `Viewer`     |
+| `auditor`          | `Viewer`     |
+
+</details>
+
+<details>
+<summary><strong>Polaris authorization</strong></summary>
+
+Polaris is used as the main authorization layer for Iceberg catalogs such as `silver` and `gold`.
+
+### Catalog roles
+
+| Polaris Catalog Role  | Purpose                                                       |
+| --------------------- | ------------------------------------------------------------- |
+| `catalog_reader`      | Read catalog metadata and table data                          |
+| `catalog_contributor` | Create and write namespaces, tables, and views                |
+| `data_administrator`  | Manage catalog, namespace, table, view metadata, and policies |
+
+### Principal role mapping
+
+| Principal Role     | Polaris Catalog Roles                       | Access Level                     |
+| ------------------ | ------------------------------------------- | -------------------------------- |
+| `business_analyst` | `catalog_reader`                            | Read-only                        |
+| `data_scientist`   | `catalog_reader`                            | Read-only                        |
+| `auditor`          | `catalog_reader`                            | Read-only                        |
+| `data_steward`     | `catalog_reader`, `data_administrator`      | Read + governance administration |
+| `data_engineer`    | `catalog_contributor`, `data_administrator` | Read/write + administration      |
+| `platform_admin`   | `catalog_contributor`, `data_administrator` | Full data/catalog administration |
+| `service_admin`    | Service administration                      | Polaris admin-plane access       |
+| `catalog_admin`    | Catalog administration                      | Polaris admin-plane access       |
+
+</details>
+
+<details>
+<summary><strong>Service accounts</strong></summary>
+
+Service accounts are used for platform-to-platform communication.
+
+| Service Account                | Purpose                                      |
+| ------------------------------ | -------------------------------------------- |
+| `svc-trino-polaris-writer`     | Trino access to Polaris/Iceberg catalogs     |
+| `svc-spark-etl-polaris-writer` | Spark ETL access to Polaris/Iceberg catalogs |
+| `svc-polaris-api-admin`        | Polaris API administration                   |
+
+Service accounts receive dedicated Keycloak roles and matching Polaris principal roles.
+
+</details>
+
+<details>
+<summary><strong>Storage authorization</strong></summary>
+
+Object storage access is managed through service identities rather than individual end-user identities.
+
+| Identity        | Access                   |
+| --------------- | ------------------------ |
+| `hiveMetastore` | Read, write, list        |
+| `trino`         | Read, write, list, admin |
+| `jupyterHub`    | Read, write, list        |
+| `sparkHistory`  | Read, write, list        |
+| `polaris`       | Read, write, list, admin |
+| `airflow`       | Read, write, list, admin |
+| `examples`      | Admin, read, write, list |
+| `seaweedfs`     | Admin                    |
+
+Storage access is controlled at the service level, while user-level data access is enforced mainly through Trino, Polaris, and application-level role mappings.
+
+</details>
 
 # Know issues
 1. [Polaris - Spark Iceberg REST Catalog refresh token](https://github.com/apache/iceberg/issues/12363)
