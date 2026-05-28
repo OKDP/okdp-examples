@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/OKDP/okdp-examples/compare/helm-okdp-examples/v1.1.0...helm-okdp-examples/v1.2.0) (2026-05-28)
+
+
+### Features
+
+* add apache polaris integration example ([764e148](https://github.com/OKDP/okdp-examples/commit/764e148ec0f67dee965a7db5164d269087f2e735))
+
+
+### Refactoring
+
+* refactoring ([03be279](https://github.com/OKDP/okdp-examples/commit/03be279fc3d339bf462126072c350fa9a09e771b))
+
 ## [1.1.0](https://github.com/OKDP/okdp-examples/compare/helm-okdp-examples/v1.0.0...helm-okdp-examples/v1.1.0) (2026-05-22)
 
 
