@@ -94,7 +94,7 @@ def _discover_seaweedfs_s3_endpoint(core_api: client.CoreV1Api) -> str:
     return f"https://seaweedfs-seaweedfs-{NAMESPACE}.{ingress_suffix}"
 
 
-def _resolve_s3_locations(core_api: client.CoreV1Api) -> tuple[str, str, str]:
+def _resolve_s3_locations(core_api: client.CoreV1Api) -> tuple[str, str, str, str]:
     bucket = (
         os.getenv(S3_BUCKET_ENV_VAR, "").strip()
         or os.getenv("AIRFLOW_DAGS_S3_BUCKET", "").strip()
