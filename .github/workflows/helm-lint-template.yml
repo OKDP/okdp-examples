@@ -20,7 +20,7 @@ on:
   workflow_call:
     inputs:
       skip_chart_test:
-        description: Wether to deploy and test the chart
+        description: Whether to deploy and test the chart
         required: false
         type: boolean
         default: false

@@ -1,6 +1,6 @@
 """
 NYC Taxi Pipeline - Airflow + Spark Operator
-Utilise l'API Kubernetes Python pour soumettre un SparkApplication.
+Uses the Kubernetes Python API to submit a SparkApplication.
 """
 import os
 import re
@@ -165,12 +165,12 @@ def submit_and_wait_nyc_taxi_etl(run_suffix, timeout_seconds=1200):
             .get("state", "SUBMITTED")
         )
         if last_state == "COMPLETED":
-            return f"Spark ETL terminé: {app_name}"
+            return f"Spark ETL completed: {app_name}"
         if last_state in {"FAILED", "SUBMISSION_FAILED", "UNKNOWN"}:
-            raise RuntimeError(f"Spark ETL échoué: {app_name} state={last_state}")
+            raise RuntimeError(f"Spark ETL failed: {app_name} state={last_state}")
         time.sleep(10)
 
-    raise TimeoutError(f"Spark ETL timeout après {timeout_seconds}s: {app_name} state={last_state}")
+    raise TimeoutError(f"Spark ETL timeout after {timeout_seconds}s: {app_name} state={last_state}")
 
 
 with DAG(

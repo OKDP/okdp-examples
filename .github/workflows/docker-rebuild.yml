@@ -22,7 +22,7 @@ on:
     # At 05:00 AM, only on Tuesday
     #- cron: "0 5 * * 2"
     # https://crontab.cronhub.io/
-    # At 05:"0 AM, only on Tuesday
+    # At 05:00 AM, only on Tuesday
     - cron: "0 5 * * 2"
   # The release should be created manually (or with user token=pr approval/merge) in order to trigger the event
   ### https://github.com/orgs/community/discussions/25281

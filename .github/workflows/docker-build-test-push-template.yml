@@ -34,7 +34,7 @@ on:
         type: string
         default: 'okdp-examples'
       publish_to_registry:
-        description: Wheter to push to the registry
+        description: Whether to push to the registry
         required: false
         type: string
         default: "false"

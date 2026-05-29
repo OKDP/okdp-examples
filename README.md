@@ -301,7 +301,7 @@ Storage access is controlled at the service level, while user-level data access 
 
 </details>
 
-# Know issues
+# Known issues
 1. [Polaris - Spark Iceberg REST Catalog refresh token](https://github.com/apache/iceberg/issues/12363)
     > Long-running jobs may need more metadata calls to Polaris during execution, not just one initial call
 2. [Polaris - OAuth 2 grant type "refresh_token" not implemented](https://github.com/apache/iceberg/issues/12196)
