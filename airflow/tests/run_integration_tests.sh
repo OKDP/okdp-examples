@@ -20,7 +20,7 @@ SCHEDULER_POD="$(find_scheduler_pod)"
 WEBSERVER_POD="$(find_webserver_pod)"
 
 if [[ -z "${SCHEDULER_POD}" || -z "${WEBSERVER_POD}" ]]; then
-  echo "Pods Airflow introuvables dans namespace ${NAMESPACE}"
+  echo "Airflow pods not found in namespace ${NAMESPACE}"
   exit 1
 fi
 
