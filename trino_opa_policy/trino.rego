@@ -40,7 +40,7 @@ table_schema_operation(catalog, schema, requested_operation) if {
 }
 
 # "*" in data.json means any schema or table name at that level.
-match_name(value, expected) if {
+match_name(_, expected) if {
     expected == "*"
 }
 
