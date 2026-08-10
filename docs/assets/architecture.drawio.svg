@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 800" width="1060" height="800" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#52525B"/>
+    </marker>
+    <marker id="arrow-light" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#A1A1AA"/>
+    </marker>
+    <style>
+      .box      { fill:#FFFFFF; stroke:#3F3F46; stroke-width:1.3; }
+      .box-soft { fill:#FAFAFA; stroke:#3F3F46; stroke-width:1.3; }
+      .box-infra{ fill:#F4F4F5; stroke:#3F3F46; stroke-width:1.3; }
+      .box-data { fill:#FFFFFF; stroke:#A1A1AA; stroke-width:1.1; }
+      .t-title  { fill:#18181B; font-size:14px; font-weight:600; letter-spacing:.1px; }
+      .t-sub    { fill:#71717A; font-size:10.5px; }
+      .t-band   { fill:#A1A1AA; font-size:9px; font-weight:600; letter-spacing:1.4px; }
+      .t-edge   { fill:#52525B; font-size:9.5px; }
+      .edge     { stroke:#52525B; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+      .edge-oidc{ stroke:#A1A1AA; stroke-width:1.1; fill:none; stroke-dasharray:4 4; marker-end:url(#arrow-light); }
+      .edge-thin{ stroke:#A1A1AA; stroke-width:1.1; fill:none; }
+    </style>
+  </defs>
+
+  <rect width="1060" height="800" fill="#FFFFFF"/>
+
+  <text class="t-band" x="48" y="52">IDENTITY</text>
+  <text class="t-band" x="48" y="168">CONSUMERS</text>
+  <text class="t-band" x="48" y="290">QUERY &amp; CATALOG</text>
+  <text class="t-band" x="48" y="534">STORAGE</text>
+
+  <!-- Keycloak -->
+  <rect class="box-soft" x="435" y="60" width="190" height="56" rx="8"/>
+  <text class="t-title" x="530" y="84" text-anchor="middle">Keycloak</text>
+  <text class="t-sub"   x="530" y="101" text-anchor="middle">OIDC identity provider</text>
+
+  <!-- Consumers -->
+  <rect class="box" x="100" y="176" width="190" height="56" rx="8"/>
+  <text class="t-title" x="195" y="200" text-anchor="middle">Superset</text>
+  <text class="t-sub"   x="195" y="217" text-anchor="middle">SQL Lab, dashboards</text>
+
+  <rect class="box" x="435" y="176" width="190" height="56" rx="8"/>
+  <text class="t-title" x="530" y="200" text-anchor="middle">Jupyter</text>
+  <text class="t-sub"   x="530" y="217" text-anchor="middle">PySpark notebooks</text>
+
+  <rect class="box" x="770" y="176" width="190" height="56" rx="8"/>
+  <text class="t-title" x="865" y="200" text-anchor="middle">Airflow</text>
+  <text class="t-sub"   x="865" y="217" text-anchor="middle">pipeline orchestration</text>
+
+  <!-- Query and catalog -->
+  <rect class="box" x="100" y="298" width="190" height="56" rx="8"/>
+  <text class="t-title" x="195" y="322" text-anchor="middle">Trino</text>
+  <text class="t-sub"   x="195" y="339" text-anchor="middle">distributed SQL engine</text>
+
+  <rect class="box" x="100" y="420" width="190" height="56" rx="8"/>
+  <text class="t-title" x="195" y="444" text-anchor="middle">Hive Metastore</text>
+  <text class="t-sub"   x="195" y="461" text-anchor="middle">bronze external tables</text>
+
+  <rect class="box" x="435" y="420" width="190" height="56" rx="8"/>
+  <text class="t-title" x="530" y="444" text-anchor="middle">Polaris</text>
+  <text class="t-sub"   x="530" y="461" text-anchor="middle">Iceberg REST catalog</text>
+
+  <!-- Storage -->
+  <rect class="box-infra" x="100" y="542" width="860" height="56" rx="8"/>
+  <text class="t-title" x="530" y="566" text-anchor="middle">Storage</text>
+  <text class="t-sub"   x="530" y="583" text-anchor="middle">S3 object storage, IAM and STS</text>
+
+  <!-- Medallion buckets -->
+  <rect class="box-data" x="100" y="668" width="190" height="66" rx="8"/>
+  <text class="t-title" x="195" y="692" text-anchor="middle" font-size="13">Bronze</text>
+  <text class="t-sub"   x="195" y="709" text-anchor="middle">raw Parquet</text>
+  <text class="t-sub"   x="195" y="723" text-anchor="middle">static S3 keys</text>
+
+  <rect class="box-data" x="435" y="668" width="190" height="66" rx="8"/>
+  <text class="t-title" x="530" y="692" text-anchor="middle" font-size="13">Silver</text>
+  <text class="t-sub"   x="530" y="709" text-anchor="middle">Iceberg tables</text>
+  <text class="t-sub"   x="530" y="723" text-anchor="middle">vended credentials</text>
+
+  <rect class="box-data" x="770" y="668" width="190" height="66" rx="8"/>
+  <text class="t-title" x="865" y="692" text-anchor="middle" font-size="13">Gold</text>
+  <text class="t-sub"   x="865" y="709" text-anchor="middle">Iceberg tables</text>
+  <text class="t-sub"   x="865" y="723" text-anchor="middle">vended credentials</text>
+
+  <!-- OIDC links -->
+  <path class="edge-oidc" d="M 195 176 L 195 68 L 435 68"/>
+  <path class="edge-oidc" d="M 530 176 L 530 116"/>
+  <path class="edge-oidc" d="M 865 176 L 865 140 L 582 140 L 582 116"/>
+  <path class="edge-oidc" d="M 290 312 L 400 312 L 400 84 L 435 84"/>
+  <path class="edge-oidc" d="M 435 440 L 418 440 L 418 104 L 435 104"/>
+  <text class="t-edge" x="300" y="60" text-anchor="middle">OIDC / OAuth2</text>
+  <text class="t-edge" x="730" y="134" text-anchor="middle">OIDC / OAuth2</text>
+  <text class="t-edge" x="409" y="262" text-anchor="middle">OIDC</text>
+
+  <!-- Superset to Trino -->
+  <path class="edge" d="M 195 232 L 195 298"/>
+  <text class="t-edge" x="205" y="262">SQLAlchemy over HTTPS</text>
+
+  <!-- Trino to Hive Metastore -->
+  <path class="edge" d="M 195 354 L 195 420"/>
+  <text class="t-edge" x="205" y="384">bronze catalog</text>
+
+  <!-- Trino to Polaris -->
+  <path class="edge" d="M 290 326 L 362 326 L 362 448 L 435 448"/>
+  <text class="t-edge" x="372" y="372">silver and gold catalogs</text>
+  <text class="t-edge" x="372" y="386">Iceberg REST</text>
+
+  <!-- Jupyter to Polaris -->
+  <path class="edge" d="M 530 232 L 530 420"/>
+  <text class="t-edge" x="540" y="310">catalog metadata</text>
+  <text class="t-edge" x="540" y="324">Iceberg REST + OAuth2</text>
+
+  <!-- Jupyter direct to storage -->
+  <path class="edge" d="M 625 204 L 700 204 L 700 542"/>
+  <text class="t-edge" x="710" y="380">data read and write</text>
+  <text class="t-edge" x="710" y="394">vended credentials</text>
+
+  <!-- Airflow to storage -->
+  <path class="edge" d="M 865 232 L 865 542"/>
+  <text class="t-edge" x="875" y="380">seeds datasets</text>
+  <text class="t-edge" x="875" y="394">Spark jobs read and write</text>
+
+  <!-- Hive Metastore to storage -->
+  <path class="edge" d="M 195 476 L 195 542"/>
+  <text class="t-edge" x="205" y="512">table locations</text>
+
+  <!-- Polaris to storage -->
+  <path class="edge" d="M 530 476 L 530 542"/>
+  <text class="t-edge" x="540" y="504">STS AssumeRole</text>
+  <text class="t-edge" x="540" y="518">temporary credentials</text>
+
+  <!-- Storage to buckets -->
+  <path class="edge-thin" d="M 195 598 L 195 668"/>
+  <path class="edge-thin" d="M 530 598 L 530 668"/>
+  <path class="edge-thin" d="M 865 598 L 865 668"/>
+</svg>
