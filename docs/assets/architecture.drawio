@@ -1,0 +1,125 @@
+<mxfile host="app.diagrams.net" agent="okdp" version="24.7.17">
+  <diagram name="OKDP examples architecture" id="okdp-examples-arch">
+    <mxGraphModel dx="1200" dy="820" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="lbl-identity" value="IDENTITY" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#A1A1AA;letterSpacing=1.4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="34" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-consume" value="CONSUMERS" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#A1A1AA;letterSpacing=1.4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-query" value="QUERY &amp; CATALOG" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#A1A1AA;letterSpacing=1.4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="272" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-storage" value="STORAGE" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#A1A1AA;letterSpacing=1.4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="516" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="keycloak" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Keycloak&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;OIDC identity provider&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="455" y="60" width="190" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="superset" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Superset&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;SQL Lab, dashboards&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="120" y="176" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="jupyter" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Jupyter&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;PySpark notebooks&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="455" y="176" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="airflow" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Airflow&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;pipeline orchestration&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="790" y="176" width="190" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="trino" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Trino&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;distributed SQL engine&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="120" y="298" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="hms" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Hive Metastore&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;bronze external tables&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="120" y="420" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="polaris" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Polaris&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;Iceberg REST catalog&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="455" y="420" width="190" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="seaweed" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Storage&lt;/b&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;S3 object storage, IAM and STS&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#F4F4F5;strokeColor=#3F3F46;strokeWidth=1.3;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="120" y="542" width="860" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bronze" value="&lt;b style=&quot;font-size:12px;&quot;&gt;Bronze&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;raw Parquet&lt;br&gt;static S3 keys&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#A1A1AA;strokeWidth=1.1;fontColor=#18181B;verticalAlign=middle;spacing=4;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="120" y="664" width="190" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="silver" value="&lt;b style=&quot;font-size:12px;&quot;&gt;Silver&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;Iceberg tables&lt;br&gt;vended credentials&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#A1A1AA;strokeWidth=1.1;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="455" y="664" width="190" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="gold" value="&lt;b style=&quot;font-size:12px;&quot;&gt;Gold&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#71717A;&quot;&gt;Iceberg tables&lt;br&gt;vended credentials&lt;/span&gt;" style="rounded=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#A1A1AA;strokeWidth=1.1;fontColor=#18181B;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="790" y="664" width="190" height="62" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-sup-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;endSize=5;fontSize=9;fontColor=#71717A;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.15;entryDx=0;entryDy=0;" edge="1" parent="1" source="superset" target="keycloak">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="215" y="68" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-jup-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;endSize=5;fontSize=9;fontColor=#71717A;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="jupyter" target="keycloak">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-air-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;endSize=5;fontSize=9;fontColor=#71717A;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="airflow" target="keycloak">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-trino-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;endSize=5;fontSize=9;fontColor=#71717A;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.35;entryDx=0;entryDy=0;" edge="1" parent="1" source="trino" target="keycloak">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="420" y="312" /><mxPoint x="420" y="80" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-pol-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;dashed=1;dashPattern=4 4;endArrow=block;endFill=1;endSize=5;fontSize=9;fontColor=#71717A;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.35;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;" edge="1" parent="1" source="polaris" target="keycloak">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="438" y="440" /><mxPoint x="438" y="99" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-sup-trino" value="SQLAlchemy over HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="superset" target="trino">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-trino-hms" value="bronze catalog" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trino" target="hms">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-trino-pol" value="silver and gold catalogs&#xa;Iceberg REST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="trino" target="polaris">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="382" y="326" /><mxPoint x="382" y="448" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-jup-pol" value="catalog metadata&#xa;Iceberg REST + OAuth2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="jupyter" target="polaris">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-jup-s3" value="data read and write&#xa;vended credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.78;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="jupyter" target="seaweed">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="712" y="204" /><mxPoint x="712" y="542" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-air-s3" value="seeds datasets&#xa;Spark jobs read and write" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.93;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="airflow" target="seaweed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-hms-s3" value="table locations" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="hms" target="seaweed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-pol-s3" value="STS AssumeRole&#xa;temporary credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#52525B;strokeWidth=1.2;endArrow=block;endFill=1;endSize=6;fontSize=9;fontColor=#52525B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.49;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="polaris" target="seaweed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-s3-bronze" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;endArrow=none;endFill=0;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="seaweed" target="bronze">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s3-silver" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;endArrow=none;endFill=0;exitX=0.49;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="seaweed" target="silver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s3-gold" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#A1A1AA;strokeWidth=1.1;endArrow=none;endFill=0;exitX=0.88;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="seaweed" target="gold">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

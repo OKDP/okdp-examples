@@ -5,6 +5,8 @@
 <img src="https://okdp.io/logos/okdp-notext.svg" height="20px" style="margin: 0 2px;" />
 </a>
 
+# Overview
+
 A collection of hands-on examples, helper utilities, Jupyter notebooks, Airflow DAGs, and data workflows showcasing how to work with the [OKDP Platform](https://okdp.io/).
 This repository is meant to help you explore OKDP capabilities around compute, object storage, data catalog, SQL engines, Spark, workflow orchestration, and analytics.
 
@@ -21,55 +23,15 @@ Over time, these examples will be extended with features, such as:
 - Incremental processing and analytics-ready datasets, etc.
 - Automated ingestion, transformations, and dataset publishing through Apache Airflow.
 
-```text
-                                       +-----------+
-                                       | Keycloak  |
-                                       |  OIDC/IdP |
-                                       +-----+-----+
-                                             ^
-                                             | OIDC / OAuth2
-          OIDC / OAuth2                      |
-        +------+     +----------+      +-----+-----+       +-----------+
-        | User |---->| Superset |----->|   Trino   |------>|   Bronze  |
-        +--+---+     +-----+----+      +-----+-----+       |HMS ext tbl|
-           |               |                   |           +-----+-----+
-           |               | SQL over HTTPS    | Hive            |
-           |               |                   v MS              |
-           |         +-----+-----+        +---------+            |
-           |         | SQLAlchemy |------>| Hive MS |            |
-           |         +-----------+        +---------+            |
-           |                                                    S3
-           | OIDC / OAuth2                                       |
-           |                                                     v
-           |         +-------------+      REST + OAuth2    +-----+-----+
-           +-------->|   Jupyter   |---------------------->|  Polaris  |
-                     | PySpark/notb|<----------------------| REST cat  |
-                     +------+------+   catalog + temp creds +-----+----+
-                            |                                        |
-                            | direct S3 with temp creds              | STS AssumeRole
-                            | for Silver / Gold writes               | + role policy
-                            v                                        v
-                       +----+----------------------------------------+----+
-                       |                 SeaweedFS S3 + IAM + STS         |
-                       +----+-------------------------------+-------------+
-                            ^                               ^
-                            | static S3 creds               | temp S3 creds
-                            |                               |
-                       +----+-----+                    +----+-----+
-                       |  Bronze  |                    | Silver   |
-                       | raw pq   |                    | Iceberg  |
-                       +----------+                    +----+-----+
-                                                            |
-                                                            v
-                                                       +----+-----+
-                                                       |   Gold   |
-                                                       | Iceberg  |
-                                                       +----------+
-```
+The diagram below illustrates how the OKDP services interact:
+
+<p align="center">
+  <img src="docs/assets/architecture.drawio.svg" alt="OKDP examples: medallion architecture across Superset, Jupyter, Airflow, Trino, Polaris and the S3 object storage" width="820"/>
+</p>
 
 #### Data flow:
 
-1. Raw Parquet datasets are stored in SeaweedFS S3 as the Bronze layer.
+1. Raw Parquet datasets are stored in the S3 object storage as the Bronze layer.
 2. Bronze data is exposed to Trino through Hive Metastore external tables.
 3. Jupyter notebooks use PySpark to read Bronze data and produce trusted Silver Iceberg tables.
 4. Silver and Gold tables are registered in Apache Polaris through the Iceberg REST catalog.
@@ -82,14 +44,14 @@ Over time, these examples will be extended with features, such as:
 - Keycloak provides OIDC / OAuth2 identity.
 - Jupyter accesses Polaris through OAuth2.
 - Polaris manages catalog permissions and returns temporary credentials for object storage access.
-- SeaweedFS provides S3-compatible storage with IAM and STS.
+- The storage service provides S3-compatible object storage with IAM and STS.
 - Bronze can use static S3 credentials for raw data access.
 - Silver and Gold should use temporary credentials through Polaris / STS where possible.
 - Superset accesses datasets through Trino rather than directly accessing object storage.
 
 # Notebooks
 
-The notebooks analyze datasets stored as Parquet on S3-compatible storage (MinIO).
+The notebooks analyze datasets stored as Parquet on S3-compatible storage.
 The same underlying dataset is queried using Trino and Spark.
 
 An [index.ipynb](./notebooks/index.ipynb) notebook is also provided as an entry point.
@@ -116,7 +78,7 @@ Use Apache Superset (SQL Lab) to query Trino and build visualizations/dashboards
 The [airflow/](./airflow/) directory contains example DAGs orchestrated by Apache Airflow on the OKDP platform. They demonstrate how to:
 
 - Submit Spark jobs to **Spark Operator** via `SparkApplication` custom resources from a DAG.
-- Build daily ETL pipelines reading from and writing to S3-compatible storage (SeaweedFS).
+- Build daily ETL pipelines reading from and writing to S3-compatible object storage.
 - Use Airflow `gitSync` to pull DAGs directly from this repository at runtime.
 
 See [`airflow/README.md`](./airflow/README.md) for the full list of DAGs and quick-start instructions.
@@ -125,7 +87,7 @@ See [`airflow/README.md`](./airflow/README.md) for the full list of DAGs and qui
 
 Using [okdp-ui](https://github.com/OKDP/okdp-sandbox), deploy the following components:
 
-- Storage: [SeaweedFS](https://github.com/seaweedfs/seaweedfs)
+- Storage: S3-compatible object storage ([SeaweedFS](https://github.com/seaweedfs/seaweedfs) in the sandbox)
 - Data Catalog: [Hive Metastore](https://hive.apache.org/), [Apache Polaris](https://polaris.apache.org/)
 - Interactive Query: [Trino](https://trino.io/)
 - Notebooks: [Jupyter](https://jupyter.org/)
@@ -302,13 +264,15 @@ Storage access is controlled at the service level, while user-level data access 
 </details>
 
 # Known issues
-1. [Polaris - Spark Iceberg REST Catalog refresh token](https://github.com/apache/iceberg/issues/12363)
-    > Long-running jobs may need more metadata calls to Polaris during execution, not just one initial call
-2. [Polaris - OAuth 2 grant type "refresh_token" not implemented](https://github.com/apache/iceberg/issues/12196)
-3. [Trino - Issue with Vended Credential Renewal with Iceberg REST Catalog](https://github.com/trinodb/trino/issues/25827)
+1. [Polaris - Spark Iceberg REST Catalog refresh token](https://github.com/apache/iceberg/issues/12363) (closed as not planned)
+    > Long-running jobs may need more metadata calls to Polaris during execution, not just one initial call.
+    >
+    > Closed upstream as not planned, so the limitation still applies.
+2. [Polaris - OAuth 2 grant type "refresh_token" not implemented](https://github.com/apache/iceberg/issues/12196) (closed as not planned)
+3. [Trino - Issue with Vended Credential Renewal with Iceberg REST Catalog](https://github.com/trinodb/trino/issues/25827) (fixed)
    > Reported upstream: with `iceberg.rest-catalog.vended-credentials-enabled=true`, long-running queries may fail once the STS token expires because Trino appears not to refresh vended credentials from the Iceberg REST catalog `/credentials` endpoint.
    >
-   > A fix has been proposed in [PR #28792](https://github.com/trinodb/trino/pull/28792), but it is still under review, so this behavior should be validated in our environment.
+   > Fixed by [PR #28998](https://github.com/trinodb/trino/pull/28998), merged on 2026-04-27. An earlier proposal, [PR #28792](https://github.com/trinodb/trino/pull/28792), was closed without being merged.
 4. [Trino - Extra credential support for user token passthrough](https://github.com/trinodb/trino/issues/27197)
     > Requests support for passing per-user OAuth tokens/credentials to the Iceberg REST catalog
 5. [Trino - Include oauth user in the request to the iceberg REST catalog](https://github.com/trinodb/trino/issues/26320)
@@ -327,5 +291,18 @@ Storage access is controlled at the service level, while user-level data access 
    > - `s3:CompleteMultipartUpload`
    > - `s3:AbortMultipartUpload`
    >
-   > The issue seems to be fixed by the pr [#8445](https://github.com/seaweedfs/seaweedfs/pull/8445).
+   > Fixed by [PR #8445](https://github.com/seaweedfs/seaweedfs/pull/8445), merged upstream.
 
+
+---
+
+## Contributing & License
+
+Contributions follow the [OKDP contribution guide](https://github.com/OKDP/.github/blob/main/CONTRIBUTING.md). Released under the [Apache License 2.0](LICENSE).
+
+---
+
+**Built 🚀 for the OKDP Community**
+<a href="https://okdp.io">
+  <img src="https://okdp.io/logos/okdp-notext.svg" height="20px" style="margin: 0 2px;" />
+</a>
