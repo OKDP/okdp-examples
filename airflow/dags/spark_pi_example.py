@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from datetime import datetime, timedelta
 
@@ -11,10 +12,19 @@ from kubernetes import client, config
 from kubernetes.client.exceptions import ApiException
 
 
+def _current_namespace() -> str:
+    """Namespace of the pod this task runs in, empty outside a cluster."""
+    try:
+        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
 SPARK_IMAGE = "quay.io/okdp/spark-py:spark-3.5.6-python-3.11-scala-2.12-java-17"
 SPARK_MAIN_APP = "local:///opt/spark/examples/jars/spark-examples_2.12-3.5.6.jar"
 SPARK_MAIN_CLASS = "org.apache.spark.examples.SparkPi"
-NAMESPACE = "default"
+NAMESPACE = os.getenv("AIRFLOW_NAMESPACE") or _current_namespace() or "default"
 
 
 default_args = {

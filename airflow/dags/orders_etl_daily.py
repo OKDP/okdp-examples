@@ -15,7 +15,16 @@ from kubernetes import client, config
 from kubernetes.client.exceptions import ApiException
 
 
-NAMESPACE = os.getenv("AIRFLOW_NAMESPACE", "default")
+def _current_namespace() -> str:
+    """Namespace of the pod this task runs in, empty outside a cluster."""
+    try:
+        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+NAMESPACE = os.getenv("AIRFLOW_NAMESPACE") or _current_namespace() or "default"
 SPARK_APP_GROUP = "sparkoperator.k8s.io"
 SPARK_APP_VERSION = "v1beta2"
 SPARK_APP_PLURAL = "sparkapplications"
