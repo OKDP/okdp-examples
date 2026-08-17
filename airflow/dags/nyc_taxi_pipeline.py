@@ -12,7 +12,17 @@ from airflow.operators.python import PythonOperator
 from kubernetes import client, config
 from kubernetes.client.exceptions import ApiException
 
-NAMESPACE = os.getenv("AIRFLOW_NAMESPACE", "default")
+
+def _current_namespace() -> str:
+    """Namespace of the pod this task runs in, empty outside a cluster."""
+    try:
+        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+NAMESPACE = os.getenv("AIRFLOW_NAMESPACE") or _current_namespace() or "default"
 SPARK_APP_GROUP = "sparkoperator.k8s.io"
 SPARK_APP_VERSION = "v1beta2"
 SPARK_APP_PLURAL = "sparkapplications"
@@ -46,6 +56,9 @@ def _safe_name(prefix, suffix, max_len=63):
 
 def _discover_s3_endpoint(core_api):
     """Discover SeaweedFS S3 endpoint in-cluster."""
+    env_endpoint = os.getenv("AIRFLOW_ETL_S3_ENDPOINT", "").strip().rstrip("/")
+    if env_endpoint:
+        return env_endpoint
     try:
         services = core_api.list_namespaced_service(namespace=NAMESPACE).items
         for svc in services:
