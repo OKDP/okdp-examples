@@ -23,6 +23,10 @@ in the scheduler within ~60 seconds.
 
 The `nyc_taxi_pipeline` DAG requires a one-time setup (ConfigMap + S3 dataset):
 
+The ETL DAGs default to the sandbox object store,
+`http://storage-s3.default.svc.cluster.local:8333`. When your store lives
+elsewhere, set `AIRFLOW_ETL_S3_ENDPOINT` on the Airflow workers.
+
 ```bash
 # 1. Deploy the Spark ETL ConfigMap in the namespace Airflow runs in
 #    (first argument, or AIRFLOW_NAMESPACE, defaults to "default")
@@ -33,7 +37,7 @@ open https://airflow.okdp.sandbox
 
 # 3. Verify the results in SeaweedFS S3
 kubectl run --rm -it s3-check --image=amazon/aws-cli:latest --restart=Never \
-  --command -- aws --endpoint-url http://seaweedfs-pmj3xs-s3.default.svc.cluster.local:8333 \
+  --command -- aws --endpoint-url http://storage-s3.default.svc.cluster.local:8333 \
   --no-verify-ssl s3 ls s3://okdp/examples/data/processed/nyc_taxi/ --recursive
 ```
 

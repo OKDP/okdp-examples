@@ -37,15 +37,15 @@ SPARK_SERVICE_ACCOUNT = "spark"
 S3_CREDENTIALS_SECRET = "creds-airflow-s3"
 S3_ACCESS_KEY_FIELD = "accessKey"
 S3_SECRET_KEY_FIELD = "secretKey"
-DEFAULT_INGRESS_SUFFIX = "okdp.sandbox"
 DEFAULT_S3_BUCKET = "airflow-logs"
 DEFAULT_S3_INPUT_PREFIX = "orders/raw"
 DEFAULT_S3_OUTPUT_PREFIX = "orders/curated"
+# The sandbox store. Any other platform sets AIRFLOW_ETL_S3_ENDPOINT.
+DEFAULT_S3_ENDPOINT = "http://storage-s3.default.svc.cluster.local:8333"
 S3_ENDPOINT_ENV_VAR = "AIRFLOW_ETL_S3_ENDPOINT"
 S3_BUCKET_ENV_VAR = "AIRFLOW_ETL_S3_BUCKET"
 S3_INPUT_PREFIX_ENV_VAR = "AIRFLOW_ETL_S3_INPUT_PREFIX"
 S3_OUTPUT_PREFIX_ENV_VAR = "AIRFLOW_ETL_S3_OUTPUT_PREFIX"
-INGRESS_SUFFIX_ENV_VAR = "AIRFLOW_INGRESS_SUFFIX"
 S3_VERIFY_SSL_ENV_VAR = "AIRFLOW_ETL_S3_VERIFY_SSL"
 S3_REGION_ENV_VAR = "AIRFLOW_ETL_S3_REGION"
 
@@ -78,32 +78,12 @@ def _clean_prefix(value: str, default_value: str) -> str:
     return normalized or default_value
 
 
-def _discover_seaweedfs_s3_endpoint(core_api: client.CoreV1Api) -> str:
+def _s3_endpoint() -> str:
     env_endpoint = os.getenv(S3_ENDPOINT_ENV_VAR, "").strip().rstrip("/")
-    if env_endpoint:
-        return env_endpoint
-
-    # Prefer in-cluster SeaweedFS S3 service when available.
-    try:
-        services = core_api.list_namespaced_service(namespace=NAMESPACE).items
-        candidates = []
-        for svc in services:
-            service_name = (svc.metadata.name or "").strip()
-            if re.match(r"^seaweedfs-[a-z0-9-]+-s3$", service_name):
-                candidates.append(service_name)
-        if candidates:
-            chosen = sorted(candidates)[0]
-            return f"http://{chosen}.{NAMESPACE}.svc.cluster.local:8333"
-    except ApiException:
-        pass
-
-    ingress_suffix = os.getenv(INGRESS_SUFFIX_ENV_VAR, DEFAULT_INGRESS_SUFFIX).strip()
-    if not ingress_suffix:
-        ingress_suffix = DEFAULT_INGRESS_SUFFIX
-    return f"https://seaweedfs-seaweedfs-{NAMESPACE}.{ingress_suffix}"
+    return env_endpoint or DEFAULT_S3_ENDPOINT
 
 
-def _resolve_s3_locations(core_api: client.CoreV1Api) -> tuple[str, str, str, str]:
+def _resolve_s3_locations() -> tuple[str, str, str, str]:
     bucket = (
         os.getenv(S3_BUCKET_ENV_VAR, "").strip()
         or os.getenv("AIRFLOW_DAGS_S3_BUCKET", "").strip()
@@ -112,7 +92,7 @@ def _resolve_s3_locations(core_api: client.CoreV1Api) -> tuple[str, str, str, st
     input_prefix = _clean_prefix(os.getenv(S3_INPUT_PREFIX_ENV_VAR, ""), DEFAULT_S3_INPUT_PREFIX)
     output_prefix = _clean_prefix(os.getenv(S3_OUTPUT_PREFIX_ENV_VAR, ""), DEFAULT_S3_OUTPUT_PREFIX)
 
-    s3_endpoint = _discover_seaweedfs_s3_endpoint(core_api=core_api)
+    s3_endpoint = _s3_endpoint()
     s3_input_uri = f"s3a://{bucket}/{input_prefix}"
     s3_output_uri_base = f"s3a://{bucket}/{output_prefix}"
     return bucket, s3_endpoint, s3_input_uri, s3_output_uri_base
@@ -215,7 +195,7 @@ def submit_and_wait_orders_etl(run_suffix: str, timeout_seconds: int = 1200) -> 
 
     spark_app_name = _safe_k8s_name("orders-etl", run_suffix)
     script_cm_name = _safe_k8s_name("orders-etl-script", run_suffix)
-    bucket, s3_endpoint, s3_input_uri, s3_output_uri_base = _resolve_s3_locations(core_api=core_api)
+    bucket, s3_endpoint, s3_input_uri, s3_output_uri_base = _resolve_s3_locations()
     output_uri = f"{s3_output_uri_base}/run_id={run_suffix}"
     ssl_enabled = str(s3_endpoint.lower().startswith("https://")).lower()
 
