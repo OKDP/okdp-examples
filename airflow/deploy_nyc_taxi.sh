@@ -12,7 +12,7 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-NAMESPACE="default"
+NAMESPACE="${1:-${AIRFLOW_NAMESPACE:-default}}"
 
 echo "======================================================================="
 echo "NYC Taxi Pipeline - Deployment"
@@ -44,7 +44,7 @@ echo ""
 echo "2. Deploying the Spark ETL ConfigMap"
 echo "-----------------------------------------------------------------------"
 
-if kubectl apply -f "$SCRIPT_DIR/manifests/nyc-taxi-etl-configmap.yaml"; then
+if kubectl apply -n "$NAMESPACE" -f "$SCRIPT_DIR/manifests/nyc-taxi-etl-configmap.yaml"; then
     echo -e "${GREEN}✓ ConfigMap deployed${NC}"
 else
     echo -e "${RED}✗ ConfigMap deployment failed${NC}"
