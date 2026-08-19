@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 from datetime import datetime, timedelta
 
@@ -36,9 +37,16 @@ default_args = {
 }
 
 
-def submit_and_wait_spark_pi(app_name: str, timeout_seconds: int = 900) -> str:
+def _safe_k8s_name(prefix: str, suffix: str, max_len: int = 63) -> str:
+    normalized = re.sub(r"[^a-z0-9-]", "-", f"{prefix}-{suffix}".lower()).strip("-")
+    return normalized[:max_len].rstrip("-")
+
+
+def submit_and_wait_spark_pi(run_id: str, timeout_seconds: int = 900) -> str:
     config.load_incluster_config()
     api = client.CustomObjectsApi()
+
+    app_name = _safe_k8s_name("spark-pi", run_id)
 
     body = {
         "apiVersion": "sparkoperator.k8s.io/v1beta2",
@@ -127,5 +135,5 @@ with DAG(
     run_spark_pi = PythonOperator(
         task_id="submit_and_wait_spark_pi",
         python_callable=submit_and_wait_spark_pi,
-        op_kwargs={"app_name": "spark-pi-{{ ts_nodash | lower }}"},
+        op_kwargs={"run_id": "{{ run_id }}"},
     )

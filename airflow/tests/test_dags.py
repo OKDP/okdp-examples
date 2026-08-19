@@ -38,4 +38,4 @@ def test_orders_etl_dag_loaded(dag_bag: DagBag) -> None:
 
     task = dag.get_task("submit_and_wait_orders_etl")
     assert isinstance(task, PythonOperator)
-    assert task.op_kwargs["run_suffix"] == "{{ ts_nodash | lower }}"
+    assert task.op_kwargs["run_id"] == "{{ run_id }}"

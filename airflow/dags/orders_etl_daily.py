@@ -59,9 +59,12 @@ default_args = {
 }
 
 
+def _slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9-]", "-", value.lower()).strip("-")
+
+
 def _safe_k8s_name(prefix: str, suffix: str, max_len: int = 63) -> str:
-    raw = f"{prefix}-{suffix}"
-    normalized = re.sub(r"[^a-z0-9-]", "-", raw.lower()).strip("-")
+    normalized = _slug(f"{prefix}-{suffix}")
     if len(normalized) <= max_len:
         return normalized
     return normalized[:max_len].rstrip("-")
@@ -188,15 +191,16 @@ def _delete_if_exists(custom_api: client.CustomObjectsApi, app_name: str) -> Non
             raise
 
 
-def submit_and_wait_orders_etl(run_suffix: str, timeout_seconds: int = 1200) -> str:
+def submit_and_wait_orders_etl(run_id: str, timeout_seconds: int = 1200) -> str:
     config.load_incluster_config()
     core_api = client.CoreV1Api()
     custom_api = client.CustomObjectsApi()
 
-    spark_app_name = _safe_k8s_name("orders-etl", run_suffix)
-    script_cm_name = _safe_k8s_name("orders-etl-script", run_suffix)
+    run_key = _slug(run_id)
+    spark_app_name = _safe_k8s_name("orders-etl", run_key)
+    script_cm_name = _safe_k8s_name("orders-etl-script", run_key)
     bucket, s3_endpoint, s3_input_uri, s3_output_uri_base = _resolve_s3_locations()
-    output_uri = f"{s3_output_uri_base}/run_id={run_suffix}"
+    output_uri = f"{s3_output_uri_base}/{run_key}"
     ssl_enabled = str(s3_endpoint.lower().startswith("https://")).lower()
 
     _ensure_s3_bucket_exists(core_api=core_api, s3_endpoint=s3_endpoint, bucket=bucket)
@@ -220,7 +224,7 @@ def submit_and_wait_orders_etl(run_suffix: str, timeout_seconds: int = 1200) -> 
                 "--output-uri",
                 output_uri,
                 "--run-id",
-                run_suffix,
+                run_key,
             ],
             "sparkVersion": "3.5.6",
             "restartPolicy": {"type": "Never"},
@@ -309,5 +313,5 @@ with DAG(
     run_orders_etl = PythonOperator(
         task_id="submit_and_wait_orders_etl",
         python_callable=submit_and_wait_orders_etl,
-        op_kwargs={"run_suffix": "{{ ts_nodash | lower }}"},
+        op_kwargs={"run_id": "{{ run_id }}"},
     )
