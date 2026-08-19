@@ -54,20 +54,13 @@ def _safe_name(prefix, suffix, max_len=63):
     return normalized[:max_len].rstrip("-")
 
 
-def _discover_s3_endpoint(core_api):
-    """Discover SeaweedFS S3 endpoint in-cluster."""
+# The sandbox store. Any other platform sets AIRFLOW_ETL_S3_ENDPOINT.
+DEFAULT_S3_ENDPOINT = "http://storage-s3.default.svc.cluster.local:8333"
+
+
+def _s3_endpoint():
     env_endpoint = os.getenv("AIRFLOW_ETL_S3_ENDPOINT", "").strip().rstrip("/")
-    if env_endpoint:
-        return env_endpoint
-    try:
-        services = core_api.list_namespaced_service(namespace=NAMESPACE).items
-        for svc in services:
-            name = (svc.metadata.name or "").strip()
-            if re.match(r"^seaweedfs-[a-z0-9-]+-s3$", name):
-                return f"http://{name}.{NAMESPACE}.svc.cluster.local:8333"
-    except ApiException:
-        pass
-    return f"https://seaweedfs-seaweedfs-{NAMESPACE}.okdp.sandbox"
+    return env_endpoint or DEFAULT_S3_ENDPOINT
 
 
 def _delete_if_exists(custom_api, app_name):
@@ -92,7 +85,7 @@ def submit_and_wait_nyc_taxi_etl(run_suffix, timeout_seconds=1200):
     custom_api = client.CustomObjectsApi()
 
     app_name = _safe_name("nyc-taxi-etl", run_suffix)
-    s3_endpoint = _discover_s3_endpoint(core_api)
+    s3_endpoint = _s3_endpoint()
     ssl_enabled = str(s3_endpoint.lower().startswith("https://")).lower()
     output_uri = f"{S3_OUTPUT_BASE}/run_id={run_suffix}"
 
