@@ -48,10 +48,12 @@ default_args = {
 }
 
 
+def _slug(value):
+    return re.sub(r"[^a-z0-9-]", "-", value.lower()).strip("-")
+
+
 def _safe_name(prefix, suffix, max_len=63):
-    raw = f"{prefix}-{suffix}"
-    normalized = re.sub(r"[^a-z0-9-]", "-", raw.lower()).strip("-")
-    return normalized[:max_len].rstrip("-")
+    return _slug(f"{prefix}-{suffix}")[:max_len].rstrip("-")
 
 
 # The sandbox store. Any other platform sets AIRFLOW_ETL_S3_ENDPOINT.
@@ -78,16 +80,17 @@ def _delete_if_exists(custom_api, app_name):
             raise
 
 
-def submit_and_wait_nyc_taxi_etl(run_suffix, timeout_seconds=1200):
+def submit_and_wait_nyc_taxi_etl(run_id, timeout_seconds=1200):
     """Submit SparkApplication and wait for completion."""
     config.load_incluster_config()
     core_api = client.CoreV1Api()
     custom_api = client.CustomObjectsApi()
 
-    app_name = _safe_name("nyc-taxi-etl", run_suffix)
+    run_key = _slug(run_id)
+    app_name = _safe_name("nyc-taxi-etl", run_key)
     s3_endpoint = _s3_endpoint()
     ssl_enabled = str(s3_endpoint.lower().startswith("https://")).lower()
-    output_uri = f"{S3_OUTPUT_BASE}/run_id={run_suffix}"
+    output_uri = f"{S3_OUTPUT_BASE}/{run_key}"
 
     _delete_if_exists(custom_api, app_name)
 
@@ -104,7 +107,7 @@ def submit_and_wait_nyc_taxi_etl(run_suffix, timeout_seconds=1200):
             "arguments": [
                 "--input", S3_INPUT,
                 "--output", output_uri,
-                "--date", run_suffix,
+                "--date", run_key,
             ],
             "sparkVersion": "3.5.6",
             "restartPolicy": {"type": "Never"},
@@ -190,5 +193,5 @@ with DAG(
     run_etl = PythonOperator(
         task_id="submit_and_wait_nyc_taxi_etl",
         python_callable=submit_and_wait_nyc_taxi_etl,
-        op_kwargs={"run_suffix": "{{ ts_nodash | lower }}"},
+        op_kwargs={"run_id": "{{ run_id }}"},
     )
