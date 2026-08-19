@@ -24,7 +24,8 @@ in the scheduler within ~60 seconds.
 The `nyc_taxi_pipeline` DAG requires a one-time setup (ConfigMap + S3 dataset):
 
 ```bash
-# 1. Deploy the Spark ETL ConfigMap
+# 1. Deploy the Spark ETL ConfigMap in the namespace Airflow runs in
+#    (first argument, or AIRFLOW_NAMESPACE, defaults to "default")
 ./airflow/deploy_nyc_taxi.sh
 
 # 2. Open the Airflow UI and trigger the DAG `nyc_taxi_pipeline`
