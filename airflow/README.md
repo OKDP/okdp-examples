@@ -21,24 +21,21 @@ in the scheduler within ~60 seconds.
 
 ## Running the NYC Taxi pipeline
 
-The `nyc_taxi_pipeline` DAG requires a one-time setup (ConfigMap + S3 dataset):
+The DAG publishes its own Spark job as a ConfigMap in the namespace it runs
+in. The raw parquet must be available in the bronze bucket.
 
 The ETL DAGs default to the sandbox object store,
 `http://storage-s3.default.svc.cluster.local:8333`. When your store lives
 elsewhere, set `AIRFLOW_ETL_S3_ENDPOINT` on the Airflow workers.
 
 ```bash
-# 1. Deploy the Spark ETL ConfigMap in the namespace Airflow runs in
-#    (first argument, or AIRFLOW_NAMESPACE, defaults to "default")
-./airflow/deploy_nyc_taxi.sh
-
-# 2. Open the Airflow UI and trigger the DAG `nyc_taxi_pipeline`
+# 1. Open the Airflow UI and trigger the DAG `nyc_taxi_pipeline`
 open https://airflow.okdp.sandbox
 
-# 3. Verify the results in SeaweedFS S3
+# 2. Verify the results in SeaweedFS S3
 kubectl run --rm -it s3-check --image=amazon/aws-cli:latest --restart=Never \
   --command -- aws --endpoint-url http://storage-s3.default.svc.cluster.local:8333 \
-  --no-verify-ssl s3 ls s3://okdp/examples/data/processed/nyc_taxi/ --recursive
+  --no-verify-ssl s3 ls s3://gold/mobility/nyc_tlc/yellow/ --recursive
 ```
 
 ## Architecture (NYC Taxi pipeline)
@@ -47,9 +44,9 @@ kubectl run --rm -it s3-check --image=amazon/aws-cli:latest --restart=Never \
 Airflow DAG (PythonOperator)
     → SparkApplication (Spark Operator)
         → Spark Driver + Executors
-            → Read:  s3a://okdp/examples/data/raw/tripdata/yellow/  (11M+ rows)
+            → Read:  s3a://bronze/mobility/nyc_tlc/yellow/  (11M+ rows)
             → Clean + Aggregate (168 rows: 24h × 7 days)
-            → Write: s3a://okdp/examples/data/processed/nyc_taxi/yellow/run_id=.../nyc_taxi_aggregated.csv
+            → Write: s3a://gold/mobility/nyc_tlc/yellow/<run id>/nyc_taxi_aggregated.csv
 ```
 
 ## Datasets
@@ -58,7 +55,7 @@ NYC Yellow Taxi data is already provisioned in SeaweedFS by the
 `okdp-examples` Helm chart at deployment time:
 
 ```
-s3://okdp/examples/data/raw/tripdata/yellow/
+s3://bronze/mobility/nyc_tlc/yellow/
 ├── month=2025-01/yellow_tripdata_2025-01.parquet  (59 MB)
 ├── month=2025-02/yellow_tripdata_2025-02.parquet  (60 MB)
 └── month=2025-03/yellow_tripdata_2025-03.parquet  (70 MB)
@@ -95,7 +92,6 @@ kubectl exec -n default deploy/airflow-main-scheduler -c scheduler -- \
 ```
 airflow/
 ├── README.md
-├── deploy_nyc_taxi.sh
 ├── dags/
 │   ├── hello_world.py
 │   ├── hello_daily.py
@@ -103,9 +99,8 @@ airflow/
 │   ├── orders_etl_daily.py
 │   ├── nyc_taxi_pipeline.py
 │   └── spark_jobs/
+│       ├── nyc_taxi_etl_job.py
 │       └── orders_etl_job.py
-├── manifests/
-│   └── nyc-taxi-etl-configmap.yaml
 └── tests/
     ├── test_dags.py
     └── run_integration_tests.sh

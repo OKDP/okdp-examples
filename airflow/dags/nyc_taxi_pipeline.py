@@ -6,6 +6,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -33,11 +34,14 @@ S3_ACCESS_KEY_FIELD = "S3_ACCESS_KEY"
 S3_SECRET_KEY_FIELD = "S3_SECRET_KEY"
 CONFIGMAP_NAME = "nyc-taxi-etl-code"
 SCRIPT_MOUNT_DIR = "/opt/spark/app"
-SCRIPT_FILE_NAME = "nyc_taxi_etl.py"
+SCRIPT_FILE_NAME = "nyc_taxi_etl_job.py"
+SCRIPT_FILE_PATH = Path(__file__).parent / "spark_jobs" / SCRIPT_FILE_NAME
 
 # Input/Output S3
-S3_INPUT = "s3a://okdp/examples/data/raw/tripdata/yellow/"
-S3_OUTPUT_BASE = "s3a://okdp/examples/data/processed/nyc_taxi/yellow"
+# The medallion layout the rest of the examples use: raw parquet lands in
+# bronze, this aggregate is a business-ready output and belongs in gold.
+S3_INPUT = os.getenv("NYC_TAXI_S3_INPUT", "s3a://bronze/mobility/nyc_tlc/yellow/")
+S3_OUTPUT_BASE = os.getenv("NYC_TAXI_S3_OUTPUT", "s3a://gold/mobility/nyc_tlc/yellow")
 
 default_args = {
     "owner": "data-team",
@@ -80,11 +84,31 @@ def _delete_if_exists(custom_api, app_name):
             raise
 
 
+def _ensure_etl_code_configmap(core_api):
+    """Publish the job source next to the DAG, so nothing else has to deploy it."""
+    if not SCRIPT_FILE_PATH.is_file():
+        raise FileNotFoundError(f"Spark ETL script not found: {SCRIPT_FILE_PATH}")
+    body = {
+        "apiVersion": "v1",
+        "kind": "ConfigMap",
+        "metadata": {"name": CONFIGMAP_NAME, "namespace": NAMESPACE},
+        "data": {SCRIPT_FILE_NAME: SCRIPT_FILE_PATH.read_text(encoding="utf-8")},
+    }
+    try:
+        core_api.create_namespaced_config_map(namespace=NAMESPACE, body=body)
+    except ApiException as exc:
+        if exc.status != 409:
+            raise
+        core_api.patch_namespaced_config_map(name=CONFIGMAP_NAME, namespace=NAMESPACE, body=body)
+
+
 def submit_and_wait_nyc_taxi_etl(run_id, timeout_seconds=1200):
     """Submit SparkApplication and wait for completion."""
     config.load_incluster_config()
     core_api = client.CoreV1Api()
     custom_api = client.CustomObjectsApi()
+
+    _ensure_etl_code_configmap(core_api)
 
     run_key = _slug(run_id)
     app_name = _safe_name("nyc-taxi-etl", run_key)
@@ -107,7 +131,7 @@ def submit_and_wait_nyc_taxi_etl(run_id, timeout_seconds=1200):
             "arguments": [
                 "--input", S3_INPUT,
                 "--output", output_uri,
-                "--date", run_key,
+                "--run-id", run_key,
             ],
             "sparkVersion": "3.5.6",
             "restartPolicy": {"type": "Never"},
