@@ -75,16 +75,20 @@ No manual download required.
 
 ## Useful commands
 
+On the sandbox the demo project runs in the `demo` namespace, and its
+Airflow instance is named `demo-airflow`. Replace both with your own
+project and instance names.
+
 ```bash
 # SparkApplication status
-kubectl get sparkapplications -n default
+kubectl get sparkapplications -n demo
 
 # Spark driver logs
-kubectl logs -n default -l spark-role=driver --tail=50
+kubectl logs -n demo -l spark-role=driver --tail=50
 
 # List Airflow DAG runs
-kubectl exec -n default deploy/airflow-main-scheduler -c scheduler -- \
-  airflow dags list-runs -d nyc_taxi_pipeline -o plain
+kubectl exec -n demo deploy/demo-airflow-main-scheduler -c scheduler -- \
+  airflow dags list-runs nyc_taxi_spark_pipeline
 ```
 
 ## Repository structure
