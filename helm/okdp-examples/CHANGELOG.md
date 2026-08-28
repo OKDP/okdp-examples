@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/OKDP/okdp-examples/compare/helm-okdp-examples/v1.2.0...helm-okdp-examples/v1.3.0) (2026-08-28)
+
+
+### Features
+
+* **templates:** add configmaps for opa-trino-rules and opa-trino-data for opa-kube-managment ([5cc8c77](https://github.com/OKDP/okdp-examples/commit/5cc8c77e19f1d0fc5272ea76db03147d7f77ddc5))
+
+
+### Documentation
+
+* align the README and sample values with the current sandbox ([0afac59](https://github.com/OKDP/okdp-examples/commit/0afac596272dfc523e420542f7ad8ca2de8af6c8))
+
 ## [1.2.0](https://github.com/OKDP/okdp-examples/compare/helm-okdp-examples/v1.1.0...helm-okdp-examples/v1.2.0) (2026-05-28)
 
 
