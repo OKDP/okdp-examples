@@ -14,10 +14,10 @@
 #  limitations under the License.
 #
 
-ARG MC_VERSION=RELEASE.2025-08-13T08-35-41Z
-FROM quay.io/minio/mc:${MC_VERSION} AS mc
-
 FROM python:3.12-slim-bookworm
+
+ARG MC_VERSION=RELEASE.2025-08-13T08-35-41Z
+ARG TARGETARCH
 
 ENV TRINO_VERSION=480 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -36,7 +36,11 @@ RUN apt-get update && \
     update-ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=mc /usr/bin/mc /usr/local/bin/mc
+RUN curl -fsSL -o /usr/local/bin/mc \
+      "https://github.com/minio/mc/releases/download/${MC_VERSION}/mc.linux-${TARGETARCH}.${MC_VERSION}" && \
+    curl -fsSL "https://github.com/minio/mc/releases/download/${MC_VERSION}/mc.linux-${TARGETARCH}.${MC_VERSION}.sha256sum" \
+      | awk '{print $1 "  /usr/local/bin/mc"}' | sha256sum -c - && \
+    chmod +x /usr/local/bin/mc
 
 RUN curl -fsSL -o /usr/local/bin/trino \
       "https://github.com/trinodb/trino/releases/download/${TRINO_VERSION}/trino-cli-${TRINO_VERSION}" && \
